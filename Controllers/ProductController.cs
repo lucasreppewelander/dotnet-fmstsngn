@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using dotnet_fmstsngn.Models;
+using dotnet_fmstsngn.Filters;
 
 namespace backend.Controllers
 {
@@ -15,6 +18,7 @@ namespace backend.Controllers
 	public class ProductController : ControllerBase
 	{
 		private readonly ProductContext _context;
+		private static CancellationToken token = new CancellationToken();
 
 		public ProductController(ProductContext context)
 		{
@@ -29,6 +33,7 @@ namespace backend.Controllers
 		}
 
 		// GET: api/Product/5
+
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Product>> GetProduct(long id)
 		{
@@ -51,7 +56,7 @@ namespace backend.Controllers
 				return NotFound();
 			}
 
-			string html = $"<h1 style='color: red;'>{product.name}</h1>";
+			string html = $"<h1 style='color: white;background-color: red;padding:8px 10px;'>{product.name}</h1>";
 
 			return Content(html, "text/html", Encoding.UTF8);
 		}
@@ -59,19 +64,32 @@ namespace backend.Controllers
 		// PUT: api/Product/5
 		// To protect from overposting attacks, enable the specific properties you want to bind to, for
 		// more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
+		[AuthorizeBearer]
 		[HttpPut("{id}")]
-		public async Task<IActionResult> PutProduct(long id, Product product)
+		public async Task<ActionResult<Product>> PutProduct(long id, Product putProduct)
 		{
-			if (id != product.id)
+			if (id != putProduct.id)
 			{
 				return BadRequest();
+			}
+
+			Product product = await _context.Products.FirstOrDefaultAsync(p => p.id == id);
+
+			if (putProduct.name != null)
+			{
+				product.name = putProduct.name;
+			}
+
+			if (putProduct.html != null)
+			{
+				product.html = putProduct.html;
 			}
 
 			_context.Entry(product).State = EntityState.Modified;
 
 			try
 			{
-				await _context.SaveChangesAsync();
+				await _context.SaveChangesAsync(token);
 			}
 			catch (DbUpdateConcurrencyException)
 			{
@@ -85,22 +103,24 @@ namespace backend.Controllers
 				}
 			}
 
-			return NoContent();
+			return Ok(product);
 		}
 
 		// POST: api/Product
 		// To protect from overposting attacks, enable the specific properties you want to bind to, for
 		// more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
+		[AuthorizeBearer]
 		[HttpPost]
 		public async Task<ActionResult<Product>> PostProduct(Product product)
 		{
 			_context.Products.Add(product);
-			await _context.SaveChangesAsync();
+			await _context.SaveChangesAsync(token);
 
 			return CreatedAtAction("GetProduct", new { id = product.id }, product);
 		}
 
 		// DELETE: api/Product/5
+		[AuthorizeBearer]
 		[HttpDelete("{id}")]
 		public async Task<ActionResult<Product>> DeleteProduct(long id)
 		{
@@ -111,7 +131,7 @@ namespace backend.Controllers
 			}
 
 			_context.Products.Remove(product);
-			await _context.SaveChangesAsync();
+			await _context.SaveChangesAsync(token);
 
 			return product;
 		}
