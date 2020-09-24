@@ -23,6 +23,7 @@ namespace backend.Controllers
 		public ProductController(ProductContext context)
 		{
 			_context = context;
+			D
 		}
 
 		// GET: api/Product
