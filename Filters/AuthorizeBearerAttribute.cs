@@ -11,21 +11,32 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Primitives;
 using Microsoft.EntityFrameworkCore;
+using dotnet_fmstsngn.Models;
 
 namespace dotnet_fmstsngn.Filters
 {
 	public class AuthorizeBearerAttribute : ActionFilterAttribute
 	{
-		public AuthorizeBearerAttribute() { }
+		private readonly UserContext _context;
+		public AuthorizeBearerAttribute(UserContext context)
+		{
+			this._context = context;
+		}
 
-		public override void OnResultExecuting(ResultExecutingContext context)
+		public override void OnActionExecuting(ActionExecutingContext context)
 		{
 			bool isAuthenticated = false;
 			foreach (KeyValuePair<string, StringValues> entry in context.HttpContext.Request.Headers)
 			{
-				if (entry.Key == "Authorization" && entry.Value == "Bearer 2uf2m8CyVZ5sxeVv5E7ALVlyv5hCDWga")
+				if (entry.Key == "Authorization")
 				{
-					isAuthenticated = true;
+					string token = entry.Value.ToString().Replace("Bearer ", "");
+					var users = from u in _context.Users where u.token == token select u;
+
+					if (users.Count() == 1)
+					{
+						isAuthenticated = true;
+					}
 				}
 			}
 
@@ -37,8 +48,10 @@ namespace dotnet_fmstsngn.Filters
 					Content = "Unauthorized"
 				};
 			}
-
-			base.OnResultExecuting(context);
+			else
+			{
+				base.OnActionExecuting(context);
+			}
 		}
 	}
 }

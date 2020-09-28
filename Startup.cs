@@ -31,9 +31,11 @@ namespace backend
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
+			services.AddDbContext<ProductContext>(opt => opt.UseInMemoryDatabase("ProductList"));
+			services.AddDbContext<UserContext>(opt => opt.UseInMemoryDatabase("Users"));
+
 			services.AddScoped<AuthorizeBearerAttribute>();
 
-			services.AddDbContext<ProductContext>(opt => opt.UseInMemoryDatabase("ProductList"));
 			services.AddControllers();
 		}
 

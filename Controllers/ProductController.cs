@@ -64,7 +64,7 @@ namespace backend.Controllers
 		// PUT: api/Product/5
 		// To protect from overposting attacks, enable the specific properties you want to bind to, for
 		// more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-		[AuthorizeBearer]
+		[ServiceFilter(typeof(AuthorizeBearerAttribute))]
 		[HttpPut("{id}")]
 		public async Task<ActionResult<Product>> PutProduct(long id, Product putProduct)
 		{
@@ -109,7 +109,7 @@ namespace backend.Controllers
 		// POST: api/Product
 		// To protect from overposting attacks, enable the specific properties you want to bind to, for
 		// more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-		[AuthorizeBearer]
+		[ServiceFilter(typeof(AuthorizeBearerAttribute))]
 		[HttpPost]
 		public async Task<ActionResult<Product>> PostProduct(Product product)
 		{
@@ -120,7 +120,7 @@ namespace backend.Controllers
 		}
 
 		// DELETE: api/Product/5
-		[AuthorizeBearer]
+		[ServiceFilter(typeof(AuthorizeBearerAttribute))]
 		[HttpDelete("{id}")]
 		public async Task<ActionResult<Product>> DeleteProduct(long id)
 		{
